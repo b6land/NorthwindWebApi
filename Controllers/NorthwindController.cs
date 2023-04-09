@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -115,6 +115,11 @@ namespace NorthwindWebApi.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// 輸入訂單 ID，取得該訂單的產品與客戶相關資料
+        /// </summary>
+        /// <param name="id"> 訂單 ID </param>
+        /// <returns> 多筆包含產品、客戶名稱等欄位的資料 </returns>
         [HttpGet("OrderCustomer/{id}")]
         public async Task<ActionResult<List<OrderCustomer>>> GetOrderDetailsAndCustomer(int id)
         {
@@ -123,7 +128,7 @@ namespace NorthwindWebApi.Controllers
                 return NotFound();
             }
 
-            return _context.QueryOrderCustomer(id) ;
+            return await _context.QueryOrderCustomer(id) ;
         }
 
         private bool OrderExists(int id)

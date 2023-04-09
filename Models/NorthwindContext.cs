@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -732,24 +733,33 @@ namespace NorthwindWebApi.Models
             OnModelCreatingPartial(modelBuilder);
         }
 
-        public ActionResult<List<OrderCustomer>> QueryOrderCustomer(int id)
+        /// <summary>
+        /// 查詢訂單的產品與客戶相關資料
+        /// </summary>
+        /// <param name="id"> 訂單 ID </param>
+        /// <returns> 查詢結果 </returns>
+        public async Task<List<OrderCustomer>> QueryOrderCustomer(int id)
         {
-            var queries = QueryOrderCustomerBySQL(id);
-            ActionResult <List<OrderCustomer>> result = new ActionResult<List<OrderCustomer>>(queries);
+            List<OrderCustomer> result = await Task.Run(() => QueryOrderCustomerBySQL(id));
             return result;
         }
 
+        /// <summary>
+        /// 用 SQL 查詢訂單的產品與客戶相關資料
+        /// </summary>
+        /// <param name="id"> 訂單 ID </param>
+        /// <returns> 多筆的產品與客戶相關資料 </returns>
         private List<OrderCustomer> QueryOrderCustomerBySQL(int id)
         {
-            
+            var OrderID = new SqlParameter("ID", id);
             StringBuilder sql = new StringBuilder();
             sql.AppendLine("SELECT O.OrderID, O.OrderDate, C.ContactName, C.Phone, OD.Quantity, OD.UnitPrice, P.ProductName ");
             sql.AppendLine("FROM Orders O");
             sql.AppendLine("INNER JOIN Customers C ON O.CustomerID = C.CustomerID");
             sql.AppendLine("INNER JOIN [Order Details] OD ON O.OrderID = OD.OrderID");
             sql.AppendLine("INNER JOIN Products P ON OD.ProductID = P.ProductID");
-            sql.AppendLine("WHERE O.OrderID = '" + id + "'");
-            var orderCustomers = this.OrderCustomers.FromSqlRaw(sql.ToString()).ToList();
+            sql.AppendLine($"WHERE O.OrderID = @ID");
+            var orderCustomers = this.OrderCustomers.FromSqlRaw(sql.ToString(), OrderID).ToList();
             return orderCustomers;
         }
 
