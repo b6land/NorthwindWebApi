@@ -24,10 +24,10 @@ namespace NorthwindWebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
         {
-          if (_context.Orders == null)
-          {
-              return NotFound();
-          }
+            if (_context.Orders == null)
+            {
+                return NotFound();
+            }
             return await _context.Orders.ToListAsync();
         }
 
@@ -35,10 +35,10 @@ namespace NorthwindWebApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
-          if (_context.Orders == null)
-          {
-              return NotFound();
-          }
+            if (_context.Orders == null)
+            {
+                return NotFound();
+            }
             var order = await _context.Orders.FindAsync(id);
 
             if (order == null)
@@ -113,6 +113,17 @@ namespace NorthwindWebApi.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpGet("OrderCustomer/{id}")]
+        public async Task<ActionResult<List<OrderCustomer>>> GetOrderDetailsAndCustomer(int id)
+        {
+            if (_context.OrderCustomers == null)
+            {
+                return NotFound();
+            }
+
+            return _context.QueryOrderCustomer(id) ;
         }
 
         private bool OrderExists(int id)

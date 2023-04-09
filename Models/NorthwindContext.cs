@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -43,6 +45,7 @@ namespace NorthwindWebApi.Models
         public virtual DbSet<SummaryOfSalesByYear> SummaryOfSalesByYears { get; set; } = null!;
         public virtual DbSet<Supplier> Suppliers { get; set; } = null!;
         public virtual DbSet<Territory> Territories { get; set; } = null!;
+        public virtual DbSet<OrderCustomer> OrderCustomers { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -727,6 +730,27 @@ namespace NorthwindWebApi.Models
             });
 
             OnModelCreatingPartial(modelBuilder);
+        }
+
+        public ActionResult<List<OrderCustomer>> QueryOrderCustomer(int id)
+        {
+            var queries = QueryOrderCustomerBySQL(id);
+            ActionResult <List<OrderCustomer>> result = new ActionResult<List<OrderCustomer>>(queries);
+            return result;
+        }
+
+        private List<OrderCustomer> QueryOrderCustomerBySQL(int id)
+        {
+            
+            StringBuilder sql = new StringBuilder();
+            sql.AppendLine("SELECT O.OrderID, O.OrderDate, C.ContactName, C.Phone, OD.Quantity, OD.UnitPrice, P.ProductName ");
+            sql.AppendLine("FROM Orders O");
+            sql.AppendLine("INNER JOIN Customers C ON O.CustomerID = C.CustomerID");
+            sql.AppendLine("INNER JOIN [Order Details] OD ON O.OrderID = OD.OrderID");
+            sql.AppendLine("INNER JOIN Products P ON OD.ProductID = P.ProductID");
+            sql.AppendLine("WHERE O.OrderID = '" + id + "'");
+            var orderCustomers = this.OrderCustomers.FromSqlRaw(sql.ToString()).ToList();
+            return orderCustomers;
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
