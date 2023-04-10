@@ -131,6 +131,52 @@ namespace NorthwindWebApi.Controllers
             return await _context.QueryOrderCustomer(id) ;
         }
 
+        /// <summary>
+        /// 編輯顧客的聯絡人姓名
+        /// </summary>
+        /// <param name="id"> 顧客 ID </param>
+        /// <param name="ContactName"> 聯絡人姓名 </param>
+        /// <returns> 無 </returns>
+        [HttpPut("EditCustomerName/{id}")]
+        public async Task<IActionResult> PutCustomer(string id, string ContactName)
+        {
+            var customer = new Customer() { CustomerId = id, ContactName = ContactName };
+            try
+            {
+                _context.Customers.Attach(customer);
+                _context.Entry(customer).Property(x => x.ContactName).IsModified = true;
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CustomerExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// 檢查顧客是否存在
+        /// </summary>
+        /// <param name="id"> 顧客 ID </param>
+        /// <returns> 是否存在 </returns>
+        private bool CustomerExists(string id)
+        {
+            return (_context.Customers?.Any(e => e.CustomerId == id)).GetValueOrDefault();
+        }
+
+        /// <summary>
+        /// 檢查訂單是否存在
+        /// </summary>
+        /// <param name="id"> 訂單 ID </param>
+        /// <returns> 是否存在 </returns>
         private bool OrderExists(int id)
         {
             return (_context.Orders?.Any(e => e.OrderId == id)).GetValueOrDefault();
