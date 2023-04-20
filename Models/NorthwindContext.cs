@@ -47,6 +47,7 @@ namespace NorthwindWebApi.Models
         public virtual DbSet<Supplier> Suppliers { get; set; } = null!;
         public virtual DbSet<Territory> Territories { get; set; } = null!;
         public virtual DbSet<OrderCustomer> OrderCustomers { get; set; } = null!;
+        public virtual DbSet<SalesByYear> SalesByYears { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -745,6 +746,18 @@ namespace NorthwindWebApi.Models
         }
 
         /// <summary>
+        /// 查詢訂單的產品與客戶相關資料
+        /// </summary>
+        /// <param name="start"> 起始日期 </param>
+        /// <param name="end"> 結束日期 </param>
+        /// <returns> 查詢結果 </returns>
+        public async Task<List<SalesByYear>> QuerySalesByYear(DateTime start, DateTime end)
+        {
+            List<SalesByYear> result = await Task.Run(() => QuerySalesByYearBySQL(start, end));
+            return result;
+        }
+
+        /// <summary>
         /// 用 SQL 查詢訂單的產品與客戶相關資料
         /// </summary>
         /// <param name="id"> 訂單 ID </param>
@@ -761,6 +774,33 @@ namespace NorthwindWebApi.Models
             sql.AppendLine($"WHERE O.OrderID = @ID");
             var orderCustomers = this.OrderCustomers.FromSqlRaw(sql.ToString(), OrderID).ToList();
             return orderCustomers;
+        }
+
+        /// <summary>
+        /// 用 SQL 查詢特定日期間的訂單銷售額
+        /// </summary>
+        /// <remarks> SQL 改寫自 https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php </remarks>
+        /// <returns> 訂單銷售額清單 </returns>
+        private List<SalesByYear> QuerySalesByYearBySQL(DateTime start, DateTime end)
+        {
+            var startParam = new SqlParameter("StartDate", start.ToString("yyyy-MM-dd"));
+            var endParam = new SqlParameter("EndDate", end.ToString("yyyy-MM-dd"));
+            StringBuilder sql = new StringBuilder();
+            sql.AppendLine("SELECT DISTINCT a.ShippedDate AS ShippedDate, ");
+            sql.AppendLine("    a.OrderID, b.Subtotal, year(a.ShippedDate) AS Year");
+            sql.AppendLine("FROM Orders a");
+            sql.AppendLine("INNER JOIN");
+            sql.AppendLine("("); // 取得每個訂單的銷售額
+            sql.AppendLine("    SELECT DISTINCT OrderID, ");
+            sql.AppendLine("        CAST(sum(UnitPrice * Quantity * (1 - Discount)) AS VARCHAR) AS Subtotal");
+            sql.AppendLine("    FROM [Order Details]");
+            sql.AppendLine("    GROUP BY OrderID");
+            sql.AppendLine(") b ON a.OrderID = b.OrderID");
+            sql.AppendLine("WHERE a.ShippedDate IS NOT NULL"); // 訂單需在特定時間範圍內
+            sql.AppendLine("    AND a.ShippedDate between @StartDate AND @EndDate");
+            sql.AppendLine("ORDER BY a.ShippedDate;");
+            var SalesByYearList = this.SalesByYears.FromSqlRaw(sql.ToString(), startParam, endParam).ToList();
+            return SalesByYearList;
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

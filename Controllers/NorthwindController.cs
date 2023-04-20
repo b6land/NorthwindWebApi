@@ -80,6 +80,23 @@ namespace NorthwindWebApi.Controllers
             return NoContent();
         }
 
+        // POST: api/Northwind/PostSalesByYear
+        [HttpPost("PostSalesByYear")]
+        public async Task<ActionResult<List<SalesByYear>>> PostSalesByYear(QuerySalesByDate salesByDate)
+        {
+            if (_context.SalesByYears == null)
+            {
+                return NotFound();
+            }
+
+            if(salesByDate.startDate.HasValue == false || salesByDate.endDate.HasValue == false)
+            {
+                return BadRequest();
+            }
+
+            return await _context.QuerySalesByYear(salesByDate.startDate.Value, salesByDate.endDate.Value);
+        }
+
         // POST: api/Northwind
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
