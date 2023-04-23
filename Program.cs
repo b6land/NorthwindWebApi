@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using NorthwindWebApi;
 using Microsoft.Extensions.Configuration;
 using NorthwindWebApi.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.CodeAnalysis.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,12 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(option=>
+    {
+        option.LoginPath = new PathString("/api/Northwind/NotLogin");
+    });
 
 var app = builder.Build();
 
@@ -25,7 +33,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCookiePolicy();
+app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 
