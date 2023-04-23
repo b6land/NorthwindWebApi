@@ -14,6 +14,7 @@
 ```
 ，傳送的網址為：
 > - https://[URL:Port]/api/Northwind/Login
+> - ex.https://localhost:7216/api/Northwind/Login
 3. 查詢某筆訂單的顧客與訂購資料，請自行修改網址 `[URL:Port]` 和訂單 `[ID]`:
 > - https://[URL:Port]/api/Northwind/OrderCustomer/[ID]
 > - ex. https://localhost:7216/api/Northwind/OrderCustomer/10249
@@ -28,7 +29,8 @@
 }
 ```
 ，傳送的網址為：
-> - https://localhost:7216/api/Northwind/PostSalesByYear
+> - https://[URL:Port]/api/Northwind/PostSalesByYear
+> - ex.https://localhost:7216/api/Northwind/PostSalesByYear
 6. 使用 POST 方式可插入 Order 資料，範例 JSON 如下：
 ``` json
 {
@@ -53,9 +55,11 @@
 }
 ```
 ，傳送的網址為：
-> - https://localhost:7216/api/Northwind/
+> - https://[URL:Port]/api/Northwind/
+> - ex. https://localhost:7216/api/Northwind/
 7. 傳送以下網址登出：
-> - https://[URL:Port]/api/Northwind/Logout
+> - https://[URL:Port]/api/Northwind/
+> - ex. https://localhost:7216/api/Northwind/Logout
 
 
 ### 介紹
