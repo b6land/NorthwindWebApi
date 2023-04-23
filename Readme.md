@@ -58,7 +58,7 @@
 > - https://[URL:Port]/api/Northwind/
 > - ex. https://localhost:7216/api/Northwind/
 7. 傳送以下網址登出：
-> - https://[URL:Port]/api/Northwind/
+> - https://[URL:Port]/api/Northwind/Logout
 > - ex. https://localhost:7216/api/Northwind/Logout
 
 
