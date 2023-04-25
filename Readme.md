@@ -57,7 +57,10 @@
 ，傳送的網址為：
 > - https://[URL:Port]/api/Northwind/
 > - ex. https://localhost:7216/api/Northwind/
-7. 傳送以下網址登出：
+7. 查詢名稱中包含特定關鍵字的產品資料，請自行修改下列網址 `[URL:Port]` 和關鍵字 `[Keyword]`:
+> - https://[URL:Port]/api/Northwind/Product?keyword=[Keyword]
+> - ex. https://localhost:7216/api/Northwind/Product?keyword=su
+8. 傳送以下網址登出：
 > - https://[URL:Port]/api/Northwind/Logout
 > - ex. https://localhost:7216/api/Northwind/Logout
 
@@ -89,3 +92,5 @@
 7. 參考以下的網頁實作 Cookie 認證，並調整為適合 .NET 6 的形式。
     - [ASP.NET Core Web API 入門教學 - 使用 cookie 驗證但不使用 ASP.NET Core Identity（實作登入登出） - 凱哥寫程式's Blog](https://blog.talllkai.com/ASPNETCore/2021/08/22/CookieAuthentication)
     - [Use cookie authentication without ASP.NET Core Identity - Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/cookie?view=aspnetcore-6.0)
+8. 主要參閱以下網頁，實作 Dapper 的查詢功能：
+- [菜雞新訓記 (3): 使用 Dapper 來連線到資料庫 CRUD 吧 - 伊果的沒人看筆記本](https://igouist.github.io/post/2021/05/newbie-3-dapper/)

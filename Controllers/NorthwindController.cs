@@ -87,6 +87,23 @@ namespace NorthwindWebApi.Controllers
             return await _context.Orders.ToListAsync();
         }
 
+        /// <summary>
+        /// 產品搜尋
+        /// </summary>
+        /// <param name="keyword"> 關鍵字 </param>
+        /// <returns> 產品列表 </returns>
+        [Authorize]
+        [HttpGet("Product")]
+        public async Task<ActionResult<List<Product>>> GetProducts(string keyword)
+        {
+            if (_context.Products == null)
+            {
+                return NotFound();
+            }
+
+            return await _context.QueryProducts(keyword);
+        }
+
         // GET: api/Northwind/5
         [Authorize]
         [HttpGet("{id}")]

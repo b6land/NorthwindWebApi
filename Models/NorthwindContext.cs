@@ -1,22 +1,35 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Text;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using ConfigurationManager = System.Configuration.ConfigurationManager;
 
 namespace NorthwindWebApi.Models
 {
     public partial class NorthwindContext : DbContext
     {
+        IConfigurationRoot configuration;
         public NorthwindContext()
         {
+            configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
         }
 
         public NorthwindContext(DbContextOptions<NorthwindContext> options)
             : base(options)
         {
+            configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
         }
 
         public virtual DbSet<AlphabeticalListOfProduct> AlphabeticalListOfProducts { get; set; } = null!;
@@ -53,8 +66,9 @@ namespace NorthwindWebApi.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=Northwind;Trusted_Connection=True;");
+                // 連線字串儲存在 appsettings.json 內
+                var connectionString = configuration.GetConnectionString("NorthwindDatabase");
+                optionsBuilder.UseSqlServer(connectionString);
             }
         }
 
@@ -755,6 +769,24 @@ namespace NorthwindWebApi.Models
         {
             List<SalesByYear> result = await Task.Run(() => QuerySalesByYearBySQL(start, end));
             return result;
+        }
+
+        /// <summary>
+        /// 產品搜尋 (使用 Dapper)
+        /// </summary>
+        /// <param name="keyword"> 關鍵字 </param>
+        /// <returns> 產品列表 </returns>
+        public async Task<List<Product>> QueryProducts(string keyword)
+        {
+            var connectionString = configuration.GetConnectionString("NorthwindDatabase");
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                var dynamicParams = new DynamicParameters();
+                dynamicParams.Add("Keyword", "%" + keyword + "%");
+                var result = await Task.Run(() => conn.Query<Product>("SELECT * FROM Products WHERE ProductName LIKE @Keyword", dynamicParams));
+                return result.ToList();
+            }
         }
 
         /// <summary>
