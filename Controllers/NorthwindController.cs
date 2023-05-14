@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NorthwindWebApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace NorthwindWebApi.Controllers
 {
@@ -256,6 +257,23 @@ namespace NorthwindWebApi.Controllers
             }
 
             return NoContent();
+        }
+
+        /// <summary>
+        /// 查詢特定分頁的訂單
+        /// </summary>
+        /// <param name="page"> 分頁編號 </param>
+        /// <returns> 訂單清單 </returns>
+        [Authorize]
+        [HttpGet("GetOrdersByPage/{page}")]
+        public async Task<ActionResult<List<Order>>> GetOrdersByPage(int page)
+        {
+            if (_context.Orders == null)
+            {
+                return NotFound();
+            }
+
+            return await _context.QueryOrdersByPage(page);
         }
 
         /// <summary>

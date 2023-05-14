@@ -767,7 +767,18 @@ namespace NorthwindWebApi.Models
         /// <returns> 查詢結果 </returns>
         public async Task<List<SalesByYear>> QuerySalesByYear(DateTime start, DateTime end)
         {
-            List<SalesByYear> result = await Task.Run(() => QuerySalesByYearBySQL(start, end));
+            List<SalesByYear> result = await Task.Run(() => QuerySalesByYearSQL(start, end));
+            return result;
+        }
+
+        /// <summary>
+        /// 查詢特定分頁的訂單
+        /// </summary>
+        /// <param name="page"> 分頁編號 </param>
+        /// <returns> 訂單清單 </returns>
+        public async Task<List<Order>> QueryOrdersByPage(int page)
+        {
+            List<Order> result = await Task.Run(() => QueryOrdersByPageSQL(page));
             return result;
         }
 
@@ -813,7 +824,7 @@ namespace NorthwindWebApi.Models
         /// </summary>
         /// <remarks> SQL 改寫自 https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php </remarks>
         /// <returns> 訂單銷售額清單 </returns>
-        private List<SalesByYear> QuerySalesByYearBySQL(DateTime start, DateTime end)
+        private List<SalesByYear> QuerySalesByYearSQL(DateTime start, DateTime end)
         {
             var startParam = new SqlParameter("StartDate", start.ToString("yyyy-MM-dd"));
             var endParam = new SqlParameter("EndDate", end.ToString("yyyy-MM-dd"));
@@ -833,6 +844,27 @@ namespace NorthwindWebApi.Models
             sql.AppendLine("ORDER BY a.ShippedDate;");
             var SalesByYearList = this.SalesByYears.FromSqlRaw(sql.ToString(), startParam, endParam).ToList();
             return SalesByYearList;
+        }
+
+        /// <summary>
+        /// 用 SQL 查詢特定分頁的訂單 (由小到大)
+        /// </summary>
+        /// <param name="page"> 分頁編號 </param>
+        /// <returns> 訂單清單 </returns>
+        private List<Order> QueryOrdersByPageSQL(int page)
+        {
+            var pageParam = new SqlParameter("PageNo", page);
+            var pageSizeParam = new SqlParameter("PageSize", 10);
+            StringBuilder sql = new StringBuilder();
+            sql.AppendLine("SELECT * FROM (");
+            sql.AppendLine("    SELECT ROW_NUMBER() OVER (ORDER BY OrderId ASC) AS RowNum, ");
+            sql.AppendLine("        OrderID, CustomerID, EmployeeID, OrderDate, RequiredDate, ShippedDate, ShipVia, ");
+            sql.AppendLine("        Freight, ShipName, ShipAddress, ShipCity, ShipRegion, ShipPostalCode, ShipCountry");
+            sql.AppendLine("    FROM Orders) O");
+            sql.AppendLine("WHERE O.RowNum BETWEEN ((@PageNo - 1) * @PageSize + 1) AND (@PageNo * @PageSize)");
+
+            var OrderList = this.Orders.FromSqlRaw(sql.ToString(), pageParam, pageSizeParam).ToList();
+            return OrderList;
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
